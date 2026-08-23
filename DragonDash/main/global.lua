@@ -101,13 +101,6 @@ function M.can_buy_upgrade()
 	return M.eggs >= M.next_upgrade_cost() and not M.all_upgrades_bought()
 end
 
-local function get_bridge_storage_method()
-	if bridge.storage.is_available("internal_storage") then
-		return "internal_storage"
-	end
-	return "local_storage"
-end
-
 local function save_game_default()
 	local save_file = sys.get_save_file("dragon_dash_dungeons", "save_file")
 	sys.save(save_file, {
@@ -128,38 +121,13 @@ local function save_game_default()
 	})
 end
 
-local function save_game_bridge()
-	local method = get_bridge_storage_method()
-	bridge.storage.set(
-		{
-			gold = M.gold,
-			eggs = M.eggs,
-			level_health = M.level_health,
-			level_power = M.level_power,
-			level_quantity = M.level_quantity,
-			level_speed = M.level_speed,
-			level_luck = M.level_luck,
-			high_score_bosses_defeated = M.high_score_bosses_defeated,
-			high_score_time = M.high_score_time,
-			player_1_selected_skin = M.player_1_selected_skin,
-			player_2_selected_skin = M.player_2_selected_skin,
-			game_beaten = M.game_beaten,
-			unlocked_skin_count = M.unlocked_skin_count,
-			unlocked_skins = json.encode(M.unlocked_skins) -- JSON encode needed, but no need to call JSON decode on load
-		},
-		function()
-			-- save successful
-		end,
-		function()
-			-- error saving
-		end,
-		method
-	)
+local function save_game_sdk()
+	print("save_game_sdk()")
 end
 
 function M.save_game()
 	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
-		save_game_bridge()
+		save_game_sdk()
 	else
 		save_game_default()
 	end
@@ -189,8 +157,7 @@ local function load_game_default()
 	end
 end
 
-local function load_game_bridge()
-	local method = get_bridge_storage_method()
+local function load_game_sdk()
 	bridge.storage.get(
 		{
 			"gold",
@@ -254,14 +221,13 @@ local function load_game_bridge()
 		end,
 		function()
 			-- error
-		end,
-		method
+		end
 	)
 end
 
 function M.load_game()
 	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
-		load_game_bridge()
+		load_game_sdk()
 	else
 		load_game_default()
 	end
