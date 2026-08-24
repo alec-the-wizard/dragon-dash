@@ -1,9 +1,6 @@
 -- global.lua
 
 
--- Other modules import
-local bridge = require("bridge.bridge")
-
 -- Module initialize
 local M = {}
 
@@ -145,7 +142,7 @@ local function save_game_sdk()
 end
 
 function M.save_game()
-	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
+	if html5 and crazygames then
 		save_game_sdk()
 	else
 		save_game_default()
@@ -206,7 +203,7 @@ local function load_game_sdk()
 end
 
 function M.load_game()
-	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
+	if html5 and crazygames then
 		load_game_sdk()
 	else
 		load_game_default()

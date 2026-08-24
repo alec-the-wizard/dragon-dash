@@ -405,6 +405,7 @@ nodes {
   id: "ad_button"
   inherit_alpha: true
   size_mode: SIZE_MODE_AUTO
+  enabled: false
 }
 nodes {
   position {
@@ -425,6 +426,7 @@ nodes {
   id: "ad_gold_earned_label"
   pivot: PIVOT_W
   inherit_alpha: true
+  enabled: false
 }
 nodes {
   position {

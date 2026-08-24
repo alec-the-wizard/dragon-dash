@@ -2,7 +2,6 @@
 
 
 local global = require("main.global")
-local bridge = require("bridge.bridge")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
@@ -12,46 +11,7 @@ function init(self)
 	-- Sound Effects
 	sound.play("go#background_sound")
 	sound.pause("go#background_sound", not global.config_music)
-	-- Playgama SDK
-	if html5 and bridge then
-		bridge.advertisement.on("interstitial_state_changed", function (_, state)
-			--print("Interstitial state changed: ", state)
-			if state == "opened" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = 0, mode = 0 })
-				sound.pause("/go#background_sound", true)
-			elseif state == "closed" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = global.last_game_speed, mode = 0 })
-				sound.pause("/go#background_sound", not global.config_music)
-			end
-		end)
-		bridge.advertisement.on("rewarded_state_changed", function (_, state)
-			--print("Rewarded state changed: ", state)
-			if state == "opened" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = 0, mode = 0 })
-				sound.pause("/go#background_sound", true)
-			elseif state == "closed" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = global.last_game_speed, mode = 0 })
-				sound.pause("/go#background_sound", not global.config_music)
-			elseif state == "rewarded" then
-				msg.post("results:/gui", "rewarded_ad_sucess")
-			end
-		end)
-		bridge.game.on("visibility_state_changed", function (_, state)
-			-- print("Visibility state changed: ", state)
-			if state == "hidden" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = 0, mode = 0 })
-				sound.pause("/go#background_sound", true)
-			elseif state == "visible" then
-				msg.post(self.loaded_proxy, "set_time_step", { factor = global.last_game_speed, mode = 0 })
-				sound.pause("/go#background_sound", not global.config_music)
-			end
-		end)
-		bridge.platform.on("audio_state_changed", function (_, is_enabled)
-			-- print("Is audio enabled: ", is_enabled)
-			sound.pause("/go#background_sound", not is_enabled)
-		end)
-		bridge.platform.send_message("game_ready")
-	end
+	-- SDK goes here
 	timer.delay(0.1, false, function ()
 		if global.unlocked_skin_count > 0 then -- If player already played before
 			msg.post('/go#main_menu_proxy', "load") -- Start game on main menu for old players
