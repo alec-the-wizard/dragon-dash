@@ -122,7 +122,26 @@ local function save_game_default()
 end
 
 local function save_game_sdk()
-	print("save_game_sdk()")
+	local save_data = {
+		gold = M.gold,
+		eggs = M.eggs,
+		level_health = M.level_health,
+		level_power = M.level_power,
+		level_quantity = M.level_quantity,
+		level_speed = M.level_speed,
+		level_luck = M.level_luck,
+		player_1_selected_skin = M.player_1_selected_skin,
+		player_2_selected_skin = M.player_2_selected_skin,
+		game_beaten = M.game_beaten,
+		config_music = M.config_music,
+		config_sound = M.config_sound,
+		unlocked_skin_count = M.unlocked_skin_count,
+		unlocked_skins = M.unlocked_skins,
+		high_score_bosses_defeated = M.high_score_bosses_defeated,
+		high_score_time = M.high_score_time,
+	}
+	local json_str = json.encode(save_data)
+	crazygames.set_item("dragon_dungeons_save_file", json_str)
 end
 
 function M.save_game()
@@ -158,71 +177,32 @@ local function load_game_default()
 end
 
 local function load_game_sdk()
-	bridge.storage.get(
-		{
-			"gold",
-			"eggs",
-			"level_health",
-			"level_power",
-			"level_quantity",
-			"level_speed",
-			"level_luck",
-			"high_score_bosses_defeated",
-			"high_score_time",
-			"player_1_selected_skin",
-			"player_2_selected_skin",
-			"game_beaten",
-			"unlocked_skin_count",
-			"unlocked_skins"
-		},
-		function(_, data)
-			if data.gold then
-				M.gold = data.gold
+	local json_str = crazygames.get_item("dragon_dungeons_save_file")
+	if json_str then
+		local save_data = json.decode(json_str)
+		M.gold = save_data.gold or M.gold
+		M.eggs = save_data.eggs or M.eggs
+		M.level_health = save_data.level_health or M.level_health
+		M.level_power = save_data.level_power or M.level_power
+		M.level_quantity = save_data.level_quantity or M.level_quantity
+		M.level_speed = save_data.level_speed or M.level_speed
+		M.level_luck = save_data.level_luck or M.level_luck
+		M.high_score_bosses_defeated = save_data.high_score_bosses_defeated or M.high_score_bosses_defeated
+		M.high_score_time = save_data.high_score_time or M.high_score_time
+		M.player_1_selected_skin = save_data.player_1_selected_skin or M.player_1_selected_skin
+		M.player_2_selected_skin = save_data.player_2_selected_skin or M.player_2_selected_skin
+		M.game_beaten = save_data.game_beaten
+		M.game_beaten = (save_data.game_beaten == true) -- Looks weird to deal with nil values
+		M.config_music = (save_data.config_music == true) -- Looks weird to deal with nil values
+		M.config_sound = (save_data.config_sound == true) -- Looks weird to deal with nil values
+		M.unlocked_skin_count = save_data.unlocked_skin_count or M.unlocked_skin_count
+		-- Load unlocked skins without breaking if new skins are added later
+		if save_data.unlocked_skins then
+			for i = 1, #save_data.unlocked_skins do
+				M.unlocked_skins[i] = save_data.unlocked_skins[i]
 			end
-			if data.eggs then
-				M.eggs = data.eggs
-			end
-			if data.level_health then
-				M.level_health = data.level_health
-			end
-			if data.level_power then
-				M.level_power = data.level_power
-			end
-			if data.level_quantity then
-				M.level_quantity = data.level_quantity
-			end
-			if data.level_speed then
-				M.level_speed = data.level_speed
-			end
-			if data.level_luck then
-				M.level_luck = data.level_luck
-			end
-			if data.high_score_bosses_defeated then
-				M.high_score_bosses_defeated = data.high_score_bosses_defeated
-			end
-			if data.high_score_time then
-				M.high_score_time = data.high_score_time
-			end
-			if data.player_1_selected_skin then
-				M.player_1_selected_skin = data.player_1_selected_skin
-			end
-			if data.player_2_selected_skin then
-				M.player_2_selected_skin = data.player_2_selected_skin
-			end
-			if data.game_beaten then
-				M.game_beaten = data.game_beaten
-			end
-			if data.unlocked_skin_count then
-				M.unlocked_skin_count = data.unlocked_skin_count
-			end
-			if data.unlocked_skins then
-				M.unlocked_skins = data.unlocked_skins -- DO NOT call json decode here
-			end
-		end,
-		function()
-			-- error
 		end
-	)
+	end
 end
 
 function M.load_game()
