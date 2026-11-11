@@ -27,8 +27,9 @@
 --
 --   platform.ready()
 --     Called once, when the first screen is loaded and the game is actually
---     interactive. Platforms that show a loading screen or need a readiness
---     signal should do it here (e.g. Wavedash init, Playgama game_ready).
+--     interactive. Use it to dismiss platform loading screens or report
+--     readiness. SDKs that must be initialized before async calls can do so
+--     earlier, in init().
 --
 --   platform.ads
 --     is_rewarded_supported() -> boolean
