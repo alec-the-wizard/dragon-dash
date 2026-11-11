@@ -2,7 +2,7 @@
 
 
 -- Other modules import
-local bridge = require("bridge.bridge")
+local platform = require("main.platform")
 
 -- Module initialize
 local M = {}
@@ -76,6 +76,26 @@ M.unlocked_skins = {
 }
 M.last_game_speed = 1
 
+-- Keys that make up a saved game. Platform storage implementations may need
+-- the key list up front (key/value stores), so keep it here as the single
+-- source of truth next to get_save_data().
+M.SAVE_KEYS = {
+	"gold",
+	"eggs",
+	"level_health",
+	"level_power",
+	"level_quantity",
+	"level_speed",
+	"level_luck",
+	"high_score_bosses_defeated",
+	"high_score_time",
+	"player_1_selected_skin",
+	"player_2_selected_skin",
+	"game_beaten",
+	"unlocked_skin_count",
+	"unlocked_skins",
+}
+
 -- Functions
 function M.next_egg_cost()
 	return M.STARTING_SKIN_COST + (M.SKIN_COST_INCREMENT * (M.unlocked_skin_count * (M.unlocked_skin_count-1)))
@@ -101,16 +121,10 @@ function M.can_buy_upgrade()
 	return M.eggs >= M.next_upgrade_cost() and not M.all_upgrades_bought()
 end
 
-local function get_bridge_storage_method()
-	if bridge.storage.is_available("internal_storage") then
-		return "internal_storage"
-	end
-	return "local_storage"
-end
-
-local function save_game_default()
-	local save_file = sys.get_save_file("dragon_dash_dungeons", "save_file")
-	sys.save(save_file, {
+---Build the complete table persisted by the platform storage.
+---@return table
+function M.get_save_data()
+	return {
 		gold = M.gold,
 		eggs = M.eggs,
 		level_health = M.level_health,
@@ -118,153 +132,73 @@ local function save_game_default()
 		level_quantity = M.level_quantity,
 		level_speed = M.level_speed,
 		level_luck = M.level_luck,
+		high_score_bosses_defeated = M.high_score_bosses_defeated,
+		high_score_time = M.high_score_time,
 		player_1_selected_skin = M.player_1_selected_skin,
 		player_2_selected_skin = M.player_2_selected_skin,
 		game_beaten = M.game_beaten,
 		unlocked_skin_count = M.unlocked_skin_count,
 		unlocked_skins = M.unlocked_skins,
-		high_score_bosses_defeated = M.high_score_bosses_defeated,
-		high_score_time = M.high_score_time,
-	})
+	}
 end
 
-local function save_game_bridge()
-	local method = get_bridge_storage_method()
-	bridge.storage.set(
-		{
-			gold = M.gold,
-			eggs = M.eggs,
-			level_health = M.level_health,
-			level_power = M.level_power,
-			level_quantity = M.level_quantity,
-			level_speed = M.level_speed,
-			level_luck = M.level_luck,
-			high_score_bosses_defeated = M.high_score_bosses_defeated,
-			high_score_time = M.high_score_time,
-			player_1_selected_skin = M.player_1_selected_skin,
-			player_2_selected_skin = M.player_2_selected_skin,
-			game_beaten = M.game_beaten,
-			unlocked_skin_count = M.unlocked_skin_count,
-			unlocked_skins = json.encode(M.unlocked_skins) -- JSON encode needed, but no need to call JSON decode on load
-		},
-		function()
-			-- save successful
-		end,
-		function()
-			-- error saving
-		end,
-		method
-	)
-end
-
-function M.save_game()
-	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
-		save_game_bridge()
-	else
-		save_game_default()
+---Apply loaded save data on top of the current defaults.
+---Missing fields keep their current value, so old or partial saves stay valid.
+---@param data table
+function M.apply_save_data(data)
+	if data.gold then
+		M.gold = data.gold
 	end
-end
-
-local function load_game_default()
-	local save_file = sys.get_save_file("dragon_dash_dungeons", "save_file")
-	local save_data = sys.load(save_file)
-	M.gold = save_data.gold or M.gold
-	M.eggs = save_data.eggs or M.eggs
-	M.level_health = save_data.level_health or M.level_health
-	M.level_power = save_data.level_power or M.level_power
-	M.level_quantity = save_data.level_quantity or M.level_quantity
-	M.level_speed = save_data.level_speed or M.level_speed
-	M.level_luck = save_data.level_luck or M.level_luck
-	M.high_score_bosses_defeated = save_data.high_score_bosses_defeated or M.high_score_bosses_defeated
-	M.high_score_time = save_data.high_score_time or M.high_score_time
-	M.player_1_selected_skin = save_data.player_1_selected_skin or M.player_1_selected_skin
-	M.player_2_selected_skin = save_data.player_2_selected_skin or M.player_2_selected_skin
-	M.game_beaten = (save_data.game_beaten == true) -- Looks weird to deal with nil values
-	M.unlocked_skin_count = save_data.unlocked_skin_count or M.unlocked_skin_count
+	if data.eggs then
+		M.eggs = data.eggs
+	end
+	if data.level_health then
+		M.level_health = data.level_health
+	end
+	if data.level_power then
+		M.level_power = data.level_power
+	end
+	if data.level_quantity then
+		M.level_quantity = data.level_quantity
+	end
+	if data.level_speed then
+		M.level_speed = data.level_speed
+	end
+	if data.level_luck then
+		M.level_luck = data.level_luck
+	end
+	if data.high_score_bosses_defeated then
+		M.high_score_bosses_defeated = data.high_score_bosses_defeated
+	end
+	if data.high_score_time then
+		M.high_score_time = data.high_score_time
+	end
+	if data.player_1_selected_skin then
+		M.player_1_selected_skin = data.player_1_selected_skin
+	end
+	if data.player_2_selected_skin then
+		M.player_2_selected_skin = data.player_2_selected_skin
+	end
+	if data.game_beaten ~= nil then
+		M.game_beaten = (data.game_beaten == true) -- Looks weird to deal with nil values
+	end
+	if data.unlocked_skin_count then
+		M.unlocked_skin_count = data.unlocked_skin_count
+	end
 	-- Load unlocked skins in a way that doesn't break the save system if I add more skins in the future
-	if save_data.unlocked_skins then -- If there is save data for unlocked skins in the first place
-		for i = 1, #save_data.unlocked_skins do
-			M.unlocked_skins[i] = save_data.unlocked_skins[i]
+	if data.unlocked_skins then -- If there is save data for unlocked skins in the first place
+		for i = 1, #data.unlocked_skins do
+			M.unlocked_skins[i] = data.unlocked_skins[i]
 		end
 	end
 end
 
-local function load_game_bridge()
-	local method = get_bridge_storage_method()
-	bridge.storage.get(
-		{
-			"gold",
-			"eggs",
-			"level_health",
-			"level_power",
-			"level_quantity",
-			"level_speed",
-			"level_luck",
-			"high_score_bosses_defeated",
-			"high_score_time",
-			"player_1_selected_skin",
-			"player_2_selected_skin",
-			"game_beaten",
-			"unlocked_skin_count",
-			"unlocked_skins"
-		},
-		function(_, data)
-			if data.gold then
-				M.gold = data.gold
-			end
-			if data.eggs then
-				M.eggs = data.eggs
-			end
-			if data.level_health then
-				M.level_health = data.level_health
-			end
-			if data.level_power then
-				M.level_power = data.level_power
-			end
-			if data.level_quantity then
-				M.level_quantity = data.level_quantity
-			end
-			if data.level_speed then
-				M.level_speed = data.level_speed
-			end
-			if data.level_luck then
-				M.level_luck = data.level_luck
-			end
-			if data.high_score_bosses_defeated then
-				M.high_score_bosses_defeated = data.high_score_bosses_defeated
-			end
-			if data.high_score_time then
-				M.high_score_time = data.high_score_time
-			end
-			if data.player_1_selected_skin then
-				M.player_1_selected_skin = data.player_1_selected_skin
-			end
-			if data.player_2_selected_skin then
-				M.player_2_selected_skin = data.player_2_selected_skin
-			end
-			if data.game_beaten then
-				M.game_beaten = data.game_beaten
-			end
-			if data.unlocked_skin_count then
-				M.unlocked_skin_count = data.unlocked_skin_count
-			end
-			if data.unlocked_skins then
-				M.unlocked_skins = data.unlocked_skins -- DO NOT call json decode here
-			end
-		end,
-		function()
-			-- error
-		end,
-		method
-	)
+function M.save_game()
+	platform.storage.save(M.get_save_data())
 end
 
 function M.load_game()
-	if html5 and bridge and (bridge.storage.is_available("local_storage") or bridge.storage.is_available("internal_storage")) then
-		load_game_bridge()
-	else
-		load_game_default()
-	end
+	platform.storage.load(M.SAVE_KEYS, M.apply_save_data)
 end
 
 -- Module return

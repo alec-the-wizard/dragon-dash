@@ -3,7 +3,7 @@
 
 local global = require("main.global")
 local device = require("main.device")
-local bridge = require("bridge.bridge")
+local platform = require("main.platform")
 local boss_id
 local boss_phase = 1
 local time_passed = 0
@@ -117,13 +117,11 @@ function init(self)
 	timer.delay(math.floor((28*(0.85+(math.random()*0.3)))), false, function ()
 		spawn_collectable_health()
 	end)
-	-- Playgama SDK
-	if html5 and bridge then
-		if bridge.advertisement.is_interstitial_supported() and global.unlocked_skin_count > 0 then -- If has ad support and player is not new
-			bridge.advertisement.show_interstitial()
-		end
-		bridge.platform.send_message("level_started")
+	-- Platform integration
+	if platform.ads.is_interstitial_supported() and global.unlocked_skin_count > 0 then -- If has ad support and player is not new
+		platform.ads.show_interstitial()
 	end
+	platform.analytics.send("level_started")
 end
 
 function fixed_update(self, dt)
@@ -155,9 +153,7 @@ function on_message(self, message_id, message, sender)
 			global.last_battle_time = time_passed
 			msg.post("main:/go", "set_battle_speed", { speed = 1 })
 			global.last_game_speed = 1
-			if html5 and bridge then
-				bridge.platform.send_message("level_completed")
-			end
+			platform.analytics.send("level_completed")
 			msg.post("main:/go", "load_results")
 		end
 	elseif message_id == hash("player_heal") then
@@ -188,9 +184,7 @@ function on_message(self, message_id, message, sender)
 			if current_boss == 21 and not global.game_beaten then -- The player just beat the game!!! :D
 				msg.post("main:/go", "set_battle_speed", { speed = 1 })
 				global.last_game_speed = 1
-				if html5 and bridge then
-					bridge.platform.send_message("level_completed")
-				end
+				platform.analytics.send("level_completed")
 				global.game_beaten = true
 				msg.post("main:/go", "load_results")
 			end

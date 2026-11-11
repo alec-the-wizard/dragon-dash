@@ -20,14 +20,11 @@ show_fullscreen_button = 0
 show_made_with_defold = 0
 splash_image = /assets/images/system/game_logo_20x.png
 show_console_banner = 0
-htmlfile = /bridge/engine_template.html
 
 [project]
 title = Dragon Dash Dungeons
 version = 1.1.0
 developer = Robot Wizard Games
-bundle_resources = /res
-dependencies#0 = https://github.com/Playgama/bridge-defold/archive/refs/tags/v2.0.0.zip
 
 [graphics]
 default_texture_min_filter = nearest

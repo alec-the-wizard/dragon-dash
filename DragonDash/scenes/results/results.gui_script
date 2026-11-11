@@ -2,7 +2,7 @@
 
 
 local global = require("main.global")
-local bridge = require("bridge.bridge")
+local platform = require("main.platform")
 
 local gold_earned = 0
 
@@ -15,7 +15,7 @@ local function calculate_gold(bosses_defeated, time_in_seconds)
 	if global.game_beaten then
 		gold = gold*1.5 -- 50% gold bonus for beating the game
 	end
-	if html5 and bridge and bridge.advertisement.is_rewarded_supported() then -- reduce gold earned as rebalance and incentive to ads
+	if platform.ads.is_rewarded_supported() then -- reduce gold earned as rebalance and incentive to ads
 		gold = 0.55*gold
 	end
 	return math.floor(gold)
@@ -76,8 +76,8 @@ function init(self)
 	-- ParticleFX
 	gui.play_particlefx(gui.get_node("party_left_fx"))
 	--gui.play_particlefx(gui.get_node("party_right_fx"))
-	-- Disable Ad button if not in HTML5
-	if html5 and bridge and bridge.advertisement.is_rewarded_supported() then
+	-- Enable the Ad button only when the platform can provide a rewarded ad
+	if platform.ads.is_rewarded_supported() then
 		gui.set_text(gui.get_node("ad_gold_earned_label"), "(+"..(gold_earned*2)..")")
 	else
 		gui.set_enabled(gui.get_node("ad_button"), false)
@@ -85,9 +85,7 @@ function init(self)
 	end
 	-- Game Beaten UI changes
 	if global.game_beaten then
-		if html5 and bridge then
-			bridge.platform.send_message("player_got_achievement")
-		end
+		platform.analytics.send("player_got_achievement")
 		timer.delay(2.1, false, function ()
 			timer.delay(2.2, true, function ()
 				gui.play_particlefx(gui.get_node("party_left_fx"))
@@ -113,13 +111,13 @@ function on_input(self, action_id, action)
 			msg.post("main:/go", "load_main_menu")
 		elseif gui.pick_node(eggs_button, action.x, action.y) then
 			msg.post("main:/go", "load_eggs")
-		elseif gui.pick_node(ad_button, action.x, action.y) and html5 then
+		elseif gui.pick_node(ad_button, action.x, action.y) then
 			gui.set_enabled(ad_button, false)
 			gui.set_enabled(gui.get_node("ad_gold_earned_label"), false)
 			msg.post("results:/go", "stop_sound")
-			if html5 and bridge and bridge.advertisement.is_rewarded_supported() then
+			if platform.ads.is_rewarded_supported() then
 				timer.delay(0.1, false, function ()
-					bridge.advertisement.show_rewarded()
+					platform.ads.show_rewarded()
 				end)
 			end
 		end
@@ -127,7 +125,7 @@ function on_input(self, action_id, action)
 end
 
 function on_message(self, message_id, message)
-	if message_id == hash("rewarded_ad_sucess") then
+	if message_id == hash("rewarded_ad_success") then
 		global.gold = global.gold + gold_earned*2
 		gold_earned = gold_earned*3
 		global.save_game()
