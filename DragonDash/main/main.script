@@ -27,13 +27,14 @@ function init(self)
 	self.loaded_proxy = nil
 	self.is_ready = false
 	go.set("/bg#bg", "tint", global.COLOR_GRAY_OPAQUE)
-	global.load_game()
 	-- Sound Effects
 	sound.play("go#background_sound")
 	sound.pause("go#background_sound", not global.config_music)
 	-- Platform integration
 	-- The adapter translates portal/SDK lifecycle events into generic
 	-- callbacks. Platform-specific code never reaches this script.
+	-- Initialize the platform before loading the game: SDK-backed storage
+	-- (e.g. Wavedash cloud saves) must be ready for the load below.
 	platform.init({
 		on_pause = function()
 			pause_game(self)
@@ -46,6 +47,7 @@ function init(self)
 		end,
 		on_rewarded = rewarded_ad_completed,
 	})
+	global.load_game()
 	timer.delay(0.1, false, function ()
 		if global.unlocked_skin_count > 0 then -- If player already played before
 			msg.post('/go#main_menu_proxy', "load") -- Start game on main menu for old players
