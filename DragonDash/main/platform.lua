@@ -52,7 +52,7 @@
 
 -- The single line to change when enabling a platform integration.
 -- Keep the module name literal: Defold only bundles statically required Lua.
-local impl = require("main.platforms.none")
+local impl = require("main.platforms.playgama")
 
 local M = {
 	ads = impl.ads,

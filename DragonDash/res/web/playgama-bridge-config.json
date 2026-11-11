@@ -1,0 +1,15 @@
+{
+	"advertisement": {
+		"useBuiltInErrorPopup": true,
+		"interstitial": {
+			"preloadOnStart": true
+		}
+	},
+	"sendAnalyticsEvents": true,
+	"showFullLoadingLogo": true,
+	"device": {
+		"supportedOrientations": [
+			"landscape"
+		]
+	}
+}
