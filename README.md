@@ -10,6 +10,7 @@ The Defold project lives in `DragonDash/` (the folder containing `game.project`)
 
 - `main` — platform-agnostic game code. No portal SDKs, dependencies, or settings.
 - `playgama` — the same game plus the Playgama Bridge integration.
+- `wavedash` — the same game plus the Wavedash SDK integration (cloud saves, `wavedash.toml`).
 
 All platform SDK access goes through `DragonDash/main/platform.lua`. Game scripts never import a platform SDK directly, which keeps `main` buildable and runnable without any portal integration. See [AGENTS.md](AGENTS.md) for the interface and for guidance on adding a new platform.
 
