@@ -4,13 +4,17 @@
 --
 -- Game code (scripts, GUI scripts, other modules) talks ONLY to this module.
 -- Everything that depends on a specific portal, SDK, or distribution platform
--- lives in an implementation under main/platform/.
+-- lives in an implementation under main/platforms/.
 --
 -- When adding a platform:
---   1. Copy main/platform/none.lua to main/platform/<platform>.lua.
+--   1. Copy main/platforms/none.lua to main/platforms/<platform>.lua.
 --   2. Implement the interface documented below.
---   3. Point IMPLEMENTATION at the new module.
+--   3. Change the single require() below to the new module.
 --   4. Add the SDK dependency/settings only on that platform's branch.
+--
+-- Note: the require() must stay static (a literal module name). Defold only
+-- bundles Lua modules that are statically reachable from a script, so a
+-- dynamically built module name would not be included in the build.
 --
 -- Interface
 -- ---------
@@ -41,10 +45,8 @@
 -- screen IDs. main.script translates platform callbacks into game messages.
 
 -- The single line to change when enabling a platform integration.
--- It must name a module under main/platform/.
-local IMPLEMENTATION = "main.platform.none"
-
-local impl = require(IMPLEMENTATION)
+-- Keep the module name literal: Defold only bundles statically required Lua.
+local impl = require("main.platforms.none")
 
 local M = {
 	ads = impl.ads,

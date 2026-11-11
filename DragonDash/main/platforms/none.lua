@@ -1,4 +1,4 @@
--- main/platform/none.lua
+-- main/platforms/none.lua
 --
 -- Default platform implementation: no SDK, no ads, no analytics.
 -- Uses the engine's own save file for persistence.

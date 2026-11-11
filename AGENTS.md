@@ -10,7 +10,7 @@ The repository root contains the Defold project in `DragonDash/`. The folder tha
   - `game.project` — project config (display, html5, dependencies, app manifest).
   - `main/` — bootstrap collection (`main.collection`), `main.script` (screen/proxy coordinator), `global.lua` (shared game state + save/load), `device.lua` (platform/OS detection helper).
   - `main/platform.lua` — **platform abstraction facade** (see below).
-  - `main/platform/` — platform SDK adapters (`none.lua` on all branches, `playgama.lua` only on the `playgama` branch).
+  - `main/platforms/` — platform SDK adapters (`none.lua` on all branches, `playgama.lua` only on the `playgama` branch).
   - `scenes/` — screens, each a collection with its own `.script` / `.gui_script` (`battle`, `main_menu`, `results`, `eggs`, `skins`, `upgrades`).
   - `components/` — reusable game objects (bosses, bullets, particles, collectables, parallax, player bullet).
   - `assets/` — images, atlases, fonts, sounds, shaders, materials.
@@ -31,7 +31,7 @@ Key `game.project` settings:
 ## Branches
 
 - `main` — platform-agnostic. **No platform SDK library, dependency, setting, or import.**
-- `playgama` — `main` plus the existing [Playgama Bridge](https://github.com/Playgama/bridge-defold) integration: `game.project` dependency, `htmlfile = /bridge/engine_template.html`, `bundle_resources = /res`, `res/web/playgama-bridge-config.json`, and `main/platform/playgama.lua`.
+- `playgama` — `main` plus the existing [Playgama Bridge](https://github.com/Playgama/bridge-defold) integration: `game.project` dependency, `htmlfile = /bridge/engine_template.html`, `bundle_resources = /res`, `res/web/playgama-bridge-config.json`, and `main/platforms/playgama.lua`.
 
 Do not add SDK code or platform settings to `main`. Do platform-specific work on the matching platform branch.
 
@@ -61,7 +61,7 @@ Documented `analytics.send` event names: `game_ready`, `level_started`, `level_c
 
 ### Rules for platform code
 
-1. Only modules under `main/platform/` may require an SDK (`bridge.bridge`, extension modules, etc.).
+1. Only modules under `main/platforms/` may require an SDK (`bridge.bridge`, extension modules, etc.).
 2. Match the interface above exactly; the game code in `main/` and `scenes/` depends on it.
 3. Platform implementations emit **generic events through the callbacks** passed to `init()`. They must not `msg.post()` to screens or know screen IDs — `main.script` owns that translation.
 4. Keep implementations tolerant of missing SDK features: return `false` from `is_*_supported()` instead of erroring, and fall back to the `none` implementation when the SDK is unavailable.
@@ -69,9 +69,9 @@ Documented `analytics.send` event names: `game_ready`, `level_started`, `level_c
 
 ### Adding a platform
 
-1. Copy `main/platform/none.lua` to `main/platform/<platform>.lua`.
+1. Copy `main/platforms/none.lua` to `main/platforms/<platform>.lua`.
 2. Implement the interface; wrap the SDK's events into `callbacks.on_pause`, `on_resume`, `on_audio_enabled`, `on_rewarded`.
-3. Change the single selector line at the top of `main/platform.lua` from `"main.platform.none"` to `"main.platform.<platform>"`.
+3. Change the single static `require()` near the top of `main/platform.lua` from `"main.platforms.none"` to `"main.platforms.<platform>"`.
 4. Add the SDK dependency/settings only on that platform branch (never on `main`).
 
 `none.lua` is the reference implementation: no ads, no analytics, and save/load via `sys.save` / `sys.load`.
