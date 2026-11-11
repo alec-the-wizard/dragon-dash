@@ -1,0 +1,5 @@
+# Ripgrep: include .deps (overrides .gitignore for search)
+!.deps
+!.deps/**
+!DragonDash/.deps
+!DragonDash/.deps/**

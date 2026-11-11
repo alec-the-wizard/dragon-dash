@@ -1,0 +1,5 @@
+# .deps is in .gitignore (not committed) but should be visible to the agent
+!.deps
+!.deps/**
+!DragonDash/.deps
+!DragonDash/.deps/**
