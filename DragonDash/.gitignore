@@ -1,6 +1,8 @@
 /.editor_settings
 /.internal
 /build
+/dist
+/bundle
 .DS_Store
 Thumbs.db
 .deps/**

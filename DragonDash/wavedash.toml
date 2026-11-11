@@ -1,0 +1,5 @@
+# Wavedash game configuration.
+# Bundle the HTML5 build into ./dist. bob/editor writes a folder named after
+# the project title inside the bundle destination, so point upload_dir at it.
+game_id = "j972wftg4zmqhmdten8kybvd4n8d567z"
+upload_dir = "./dist/DragonDashDungeons"
