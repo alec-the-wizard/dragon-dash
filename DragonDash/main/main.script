@@ -25,6 +25,7 @@ end
 function init(self)
 	msg.post(".", "acquire_input_focus")
 	self.loaded_proxy = nil
+	self.is_ready = false
 	go.set("/bg#bg", "tint", global.COLOR_GRAY_OPAQUE)
 	global.load_game()
 	-- Sound Effects
@@ -45,7 +46,6 @@ function init(self)
 		end,
 		on_rewarded = rewarded_ad_completed,
 	})
-	platform.analytics.send("game_ready")
 	timer.delay(0.1, false, function ()
 		if global.unlocked_skin_count > 0 then -- If player already played before
 			msg.post('/go#main_menu_proxy', "load") -- Start game on main menu for old players
@@ -60,6 +60,12 @@ function on_message(self, message_id, message, sender)
 		msg.post(sender, "init")
 		msg.post(sender, "enable")
 		self.loaded_proxy = sender
+		-- The first screen is now loaded: tell the platform the game is
+		-- actually interactive (dismiss loading screens, report readiness).
+		if not self.is_ready then
+			self.is_ready = true
+			platform.ready()
+		end
 	elseif message_id == hash("load_main_menu") then
 		msg.post(self.loaded_proxy, "unload")
 		msg.post('/go#main_menu_proxy', "load")

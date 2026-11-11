@@ -32,6 +32,7 @@ Key `game.project` settings:
 
 - `main` — platform-agnostic. **No platform SDK library, dependency, setting, or import.**
 - `playgama` — `main` plus the existing [Playgama Bridge](https://github.com/Playgama/bridge-defold) integration: `game.project` dependency, `htmlfile = /bridge/engine_template.html`, `bundle_resources = /res`, `res/web/playgama-bridge-config.json`, and `main/platforms/playgama.lua`.
+- `wavedash` — `main` plus the [Wavedash SDK for Defold](https://github.com/wvdsh/sdk-defold) integration: `game.project` dependency, `wavedash.toml` (game id + upload dir), and `main/platforms/wavedash.lua` (cloud saves + required `wavedash.init`).
 
 Do not add SDK code or platform settings to `main`. Do platform-specific work on the matching platform branch.
 
@@ -48,6 +49,7 @@ local platform = require("main.platform")
 | Member | Function | Contract |
 |---|---|---|
 | `platform.init(callbacks)` | sets up SDK event wiring | `callbacks` may contain `on_pause`, `on_resume`, `on_audio_enabled(is_enabled)`, `on_rewarded` |
+| `platform.ready()` | — | called once when the first screen is loaded; dismiss platform loading screens / report readiness |
 | `platform.ads.is_rewarded_supported()` | boolean | whether a rewarded ad can be shown |
 | `platform.ads.is_interstitial_supported()` | boolean | whether an interstitial ad can be shown |
 | `platform.ads.show_rewarded()` | — | show rewarded ad; success arrives through `on_rewarded` |
@@ -57,7 +59,9 @@ local platform = require("main.platform")
 | `platform.storage.load(keys, on_success, on_error)` | — | load save data; `on_success(data)` receives a table |
 | `platform.analytics.send(event_name)` | — | send a game event to the platform |
 
-Documented `analytics.send` event names: `game_ready`, `level_started`, `level_completed`, `player_got_achievement`.
+Documented `analytics.send` event names: `level_started`, `level_completed`, `player_got_achievement`.
+
+`ready()` is separate from analytics: it is the one-time "game is interactive" signal that portals and SDKs use to hide loading screens.
 
 ### Rules for platform code
 
@@ -70,7 +74,7 @@ Documented `analytics.send` event names: `game_ready`, `level_started`, `level_c
 ### Adding a platform
 
 1. Copy `main/platforms/none.lua` to `main/platforms/<platform>.lua`.
-2. Implement the interface; wrap the SDK's events into `callbacks.on_pause`, `on_resume`, `on_audio_enabled`, `on_rewarded`.
+2. Implement the interface; wire `ready()` to the SDK's loading/readiness call, and SDK events into `callbacks.on_pause`, `on_resume`, `on_audio_enabled`, `on_rewarded`.
 3. Change the single static `require()` near the top of `main/platform.lua` from `"main.platforms.none"` to `"main.platforms.<platform>"`.
 4. Add the SDK dependency/settings only on that platform branch (never on `main`).
 

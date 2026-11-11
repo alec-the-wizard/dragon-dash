@@ -93,4 +93,9 @@ function M.init(callbacks)
 	-- No lifecycle events to wire up.
 end
 
+-- Called once the first screen is loaded.
+function M.ready()
+	print("[platform] ready")
+end
+
 return M

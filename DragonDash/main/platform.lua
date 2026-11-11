@@ -25,6 +25,11 @@
 --       on_audio_enabled(enabled)  platform-wide audio switch
 --       on_rewarded()              a rewarded ad completed successfully
 --
+--   platform.ready()
+--     Called once, when the first screen is loaded and the game is actually
+--     interactive. Platforms that show a loading screen or need a readiness
+--     signal should do it here (e.g. Wavedash init, Playgama game_ready).
+--
 --   platform.ads
 --     is_rewarded_supported() -> boolean
 --     is_interstitial_supported() -> boolean
@@ -38,7 +43,7 @@
 --
 --   platform.analytics
 --     send(event_name)
---       Game events: "game_ready", "level_started", "level_completed",
+--       Game events: "level_started", "level_completed",
 --       "player_got_achievement".
 --
 -- Implementations must not post messages to screens and must not reference
@@ -58,6 +63,13 @@ local M = {
 function M.init(callbacks)
 	if impl.init then
 		impl.init(callbacks)
+	end
+end
+
+-- Called once the first screen is loaded and the game is interactive.
+function M.ready()
+	if impl.ready then
+		impl.ready()
 	end
 end
 
